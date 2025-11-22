@@ -23,43 +23,43 @@
 */
 
                         // A whole process
-#include <stdio.h>
-#include <unistd.h>
-
-int main(void)
-{
-    printf("Start\n");
-    usleep(2000000);
-    printf("2 seconds later\n");
-
-    usleep(4000000);
-    printf("4 seconds later\n");
-
-    return 0;
-}
-                        // a single thread inside the main thread 
-
 // #include <stdio.h>
-// #include <pthread.h>
 // #include <unistd.h>
-
-// void *worker(void *arg)
-// {
-//     printf("Worker: sleeping 2s\n");
-//     usleep(2000000);
-//     printf("Worker: awake\n");
-//     return NULL;
-// }
 
 // int main(void)
 // {
-//     pthread_t t;
-//     pthread_create(&t, NULL, worker, NULL);
+//     printf("Start\n");
+//     usleep(2000000);
+//     printf("2 seconds later\n");
 
-//     printf("Main: running while worker sleeps\n");
-//     usleep(1000000);
-//     printf("Main: still running\n");
+//     usleep(4000000);
+//     printf("4 seconds later\n");
 
-//     pthread_join(t, NULL);
 //     return 0;
 // }
+                        // a single thread inside the main thread 
+
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+void *worker(void *arg)
+{
+    printf("Worker: sleeping 2s\n");
+    usleep(2000000);
+    printf("Worker: awake\n");
+    return NULL;
+}
+
+int main(void)
+{
+    pthread_t t;
+    pthread_create(&t, NULL, worker, NULL);
+
+    printf("Main: running while worker sleeps\n");
+    usleep(1000000);
+    printf("Main: still running\n");
+
+    pthread_join(t, NULL);
+    return 0;
+}
