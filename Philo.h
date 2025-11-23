@@ -6,7 +6,7 @@
 /*   By: msafa <msafa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:33:03 by msafa             #+#    #+#             */
-/*   Updated: 2025/11/10 14:49:17 by msafa            ###   ########.fr       */
+/*   Updated: 2025/11/24 01:05:37 by msafa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ typedef struct s_arguments
 typedef struct s_philo
 {
     int philosopher_id;
-    t_arguments  *arguments;   
 }t_philo;
 
 #endif
