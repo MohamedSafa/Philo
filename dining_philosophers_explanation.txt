@@ -1,0 +1,90 @@
+## The Dining Philosophers Problem
+
+**Created by:** Edsger Dijkstra in 1965
+
+**The Classic Problem:**
+
+Imagine 5 philosophers sitting around a circular table. Between each pair of philosophers, there is one fork (so 5 forks total). Each philosopher needs **two forks** to eat.
+
+**The philosophers do three things:**
+1. **Think** - they don't need forks
+2. **Eat** - they need BOTH the left and right fork
+3. **Sleep** - they don't need forks
+
+**The Challenge:**
+
+If all philosophers pick up their left fork at the same time, none can pick up their right fork, and they all starve waiting forever. This is called **deadlock**.
+
+Other problems:
+- **Starvation**: One philosopher might never get to eat if others keep grabbing forks first
+- **Race conditions**: Multiple threads trying to access the same resources simultaneously
+
+**Why It's Famous:**
+
+This problem illustrates fundamental concepts in **concurrent programming**:
+- **Mutual exclusion** - only one philosopher can hold a fork at a time
+- **Deadlock** - circular waiting where nobody can proceed
+- **Resource sharing** - multiple processes competing for limited resources
+- **Synchronization** - coordinating threads to avoid conflicts
+
+**Solutions typically involve:**
+- Limiting how many philosophers can try to eat simultaneously
+- Enforcing an ordering (odd philosophers pick left first, even pick right first)
+- Using a waiter/monitor to control access
+- Making philosophers put down both forks if they can't get both
+
+It's a classic problem used to teach operating systems, threading, and synchronization concepts!
+
+## Concurrent Programming Explained:
+
+**Concurrent programming** means running multiple tasks **at the same time** (or appearing to run at the same time).
+
+**Simple analogy:**
+- **Sequential**: You cook pasta, THEN you make sauce, THEN you set the table (one thing at a time)
+- **Concurrent**: You boil pasta WHILE making sauce WHILE someone else sets the table (multiple things happening together)
+
+**In your code:**
+- You created multiple philosopher **threads** at main.c:94
+- Each thread runs independently and simultaneously
+- They all execute the `dining` function at the same time
+
+**The challenge:**
+When multiple threads access the **same shared resources** (like your fork mutexes), problems arise:
+
+1. **Race condition**: Two philosophers try to grab the same fork at the exact same time - who gets it?
+2. **Deadlock**: All philosophers grab their left fork and wait forever for their right fork
+3. **Data corruption**: Without proper locking, shared data can get messed up
+
+**That's why you use mutexes** - they ensure only ONE thread can hold a fork at a time, preventing chaos when multiple threads try to access the same resource simultaneously.
+
+## CRITICAL Understanding: pthread_mutex_lock() BLOCKS Threads
+
+**The Most Important Concept:**
+
+When a thread calls `pthread_mutex_lock()` on a mutex that's already locked by another thread, **the thread completely freezes (blocks)** until the mutex becomes available.
+
+**What this means:**
+- The blocked thread **cannot execute ANY code**
+- It cannot check time
+- It cannot update variables
+- It cannot detect its own death
+- It's completely paused by the operating system
+
+**Example:**
+```c
+pthread_mutex_lock(philosophers->left_fork);  // Got it!
+printf("has taken a fork\n");
+pthread_mutex_lock(philosophers->right_fork);  // BLOCKS HERE if taken!
+// ^^^ Thread is FROZEN here - cannot do anything
+printf("has taken a fork\n");  // Won't execute until lock succeeds
+```
+
+**Why This Matters for Death Detection:**
+
+A philosopher waiting for a fork **cannot detect their own death** because they're blocked and can't execute code to check the time.
+
+**The Solution:**
+- An external monitor (main thread) must watch all philosophers
+- Main checks: `current_time - last_meal_time > time_to_die`
+- Each philosopher updates `last_meal_time` when they start eating
+- Main detects death and stops the simulation
