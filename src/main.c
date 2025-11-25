@@ -6,7 +6,7 @@
 /*   By: msafa <msafa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:39:57 by msafa             #+#    #+#             */
-/*   Updated: 2025/11/25 01:37:52 by msafa            ###   ########.fr       */
+/*   Updated: 2025/11/25 20:32:06 by msafa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@ int	main(int argc, char *argv[])
 	t_philo *philosophers;
 	pthread_mutex_t *forks;
 	pthread_t *threads;
+	struct timeval t;
+	int start_time;
 	int i;
+	int death_tracker;
 
 	i = 0;
 	if (!validate_input(argc, argv))
@@ -31,18 +34,32 @@ int	main(int argc, char *argv[])
 	forks = init_mutex(&arguments);
 	if(forks == NULL)
 		return(1);
+	gettimeofday(&t,NULL);
+	start_time = t.tv_sec;
+	arguments.start_time = start_time;
 	threads = init_threads(&arguments,&philosophers,forks);
 	if(threads == NULL)
 		return(1);
-	while(i < arguments.number_of_philosphers)
+	while(1)
 	{
-		void *ret;
-		if((philosophers[i]).last_meal_time > arguments.time_to_die)
+		i = 0;
+		while(i < arguments.number_of_philosphers)
 		{
-			pthread_join(threads[i],&ret);
-			return(0);
+			gettimeofday(&t,NULL);
+			death_tracker = ((t.tv_sec - arguments.start_time) * 1000) - philosophers[i].last_meal_time;
+			if(death_tracker > arguments.time_to_die)
+				break;
+			i++;
 		}
-		i++;
+		if(i < arguments.number_of_philosphers)
+			break;
+	}
+	void *ret;
+	int j =0;
+	while(j < arguments.number_of_philosphers)
+	{
+		pthread_join(threads[j],&ret);
+		j++;
 	}
 	return (0);
 }
