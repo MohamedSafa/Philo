@@ -6,7 +6,7 @@
 /*   By: msafa <msafa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/24 15:21:59 by msafa             #+#    #+#             */
-/*   Updated: 2025/11/25 01:29:32 by msafa            ###   ########.fr       */
+/*   Updated: 2025/11/26 16:39:13 by msafa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,16 @@ pthread_t *init_threads(t_arguments *arguments,t_philo **philosophers,pthread_mu
 		(*philosophers)[i].left_fork = &forks[i];
 		(*philosophers)[i].right_fork = &forks[(i + 1) % arguments->number_of_philosphers];
 		(*philosophers)[i].last_meal_time = 0;
+		(*philosophers)[i].eating_start_time = 0;
+		(*philosophers)[i].eating_finish_time = 0;
+		pthread_mutex_init(&(*philosophers)[i].meal_mutex, NULL);
 		(*philosophers)[i].arguments = arguments;
 		if(pthread_create(&threads[i],NULL,dining,&(*philosophers)[i]) != 0)
 		{
 			perror("Failed to create thread");
 			return(NULL);
 		}
+		pthread_detach(threads[i]);
 		i++;
 	}
 	return(threads);

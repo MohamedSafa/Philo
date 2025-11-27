@@ -6,7 +6,7 @@
 /*   By: msafa <msafa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:39:57 by msafa             #+#    #+#             */
-/*   Updated: 2025/11/25 20:32:06 by msafa            ###   ########.fr       */
+/*   Updated: 2025/11/27 01:13:41 by msafa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,12 @@ int	main(int argc, char *argv[])
 		return (1);
 	}
 	parse_arguments(argv, &arguments);
+	pthread_mutex_init(&arguments.print_mutex,NULL);
 	forks = init_mutex(&arguments);
 	if(forks == NULL)
 		return(1);
 	gettimeofday(&t,NULL);
-	start_time = t.tv_sec;
+	start_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
 	arguments.start_time = start_time;
 	threads = init_threads(&arguments,&philosophers,forks);
 	if(threads == NULL)
@@ -45,21 +46,20 @@ int	main(int argc, char *argv[])
 		i = 0;
 		while(i < arguments.number_of_philosphers)
 		{
-			gettimeofday(&t,NULL);
-			death_tracker = ((t.tv_sec - arguments.start_time) * 1000) - philosophers[i].last_meal_time;
+			pthread_mutex_lock(&philosophers[i].meal_mutex);
+			death_tracker = philosophers[i].last_meal_time;
+			pthread_mutex_unlock(&philosophers[i].meal_mutex);
 			if(death_tracker > arguments.time_to_die)
-				break;
+			{
+				pthread_mutex_lock(&arguments.print_mutex);
+				printf("%d %d died\n", death_tracker, philosophers[i].philosopher_id);
+				free(threads);
+				free(forks);
+				free(philosophers);
+				return (0);
+			}
 			i++;
 		}
-		if(i < arguments.number_of_philosphers)
-			break;
-	}
-	void *ret;
-	int j =0;
-	while(j < arguments.number_of_philosphers)
-	{
-		pthread_join(threads[j],&ret);
-		j++;
 	}
 	return (0);
 }
