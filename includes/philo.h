@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Philo.h                                            :+:      :+:    :+:   */
+/*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: msafa <msafa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:33:03 by msafa             #+#    #+#             */
-/*   Updated: 2025/11/26 20:13:43 by msafa            ###   ########.fr       */
+/*   Updated: 2025/11/27 19:25:56 by msafa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ typedef struct s_philo
     pthread_mutex_t *right_fork;
     int last_meal_time;
     int eating_start_time;
-    int eating_finish_time;
+    int meals_eaten;
     pthread_mutex_t meal_mutex;
     t_arguments *arguments;
 }t_philo;

@@ -44,21 +44,35 @@ int	main(int argc, char *argv[])
 	while(1)
 	{
 		i = 0;
+		int finished_count = 0;
 		while(i < arguments.number_of_philosphers)
 		{
+			gettimeofday(&t,NULL);
+			int current_time = (t.tv_sec * 1000) + (t.tv_usec / 1000) - start_time;
 			pthread_mutex_lock(&philosophers[i].meal_mutex);
 			death_tracker = philosophers[i].last_meal_time;
+			if(arguments.number_of_times_each_philosopher_must_eat != -1
+				&& philosophers[i].meals_eaten >= arguments.number_of_times_each_philosopher_must_eat)
+				finished_count++;
 			pthread_mutex_unlock(&philosophers[i].meal_mutex);
-			if(death_tracker > arguments.time_to_die)
+			if((current_time - death_tracker) > arguments.time_to_die)
 			{
 				pthread_mutex_lock(&arguments.print_mutex);
-				printf("%d %d died\n", death_tracker, philosophers[i].philosopher_id);
+				printf("%d %d died\n", current_time, philosophers[i].philosopher_id);
 				free(threads);
 				free(forks);
 				free(philosophers);
 				return (0);
 			}
 			i++;
+		}
+		if(finished_count == arguments.number_of_philosphers)
+		{
+			pthread_mutex_lock(&arguments.print_mutex);
+			free(threads);
+			free(forks);
+			free(philosophers);
+			return (0);
 		}
 	}
 	return (0);
