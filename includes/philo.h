@@ -6,7 +6,7 @@
 /*   By: msafa <msafa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:33:03 by msafa             #+#    #+#             */
-/*   Updated: 2025/11/25 19:10:20 by msafa            ###   ########.fr       */
+/*   Updated: 2025/11/26 20:13:43 by msafa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-typedef struct s_arguments   
+typedef struct s_arguments
 {
     int number_of_philosphers;
     int number_of_forks;
@@ -29,6 +29,7 @@ typedef struct s_arguments
     int time_to_sleep;
     int number_of_times_each_philosopher_must_eat;
     int start_time;
+    pthread_mutex_t print_mutex;
 } t_arguments;
 
 typedef struct s_philo
@@ -37,6 +38,9 @@ typedef struct s_philo
     pthread_mutex_t *left_fork;
     pthread_mutex_t *right_fork;
     int last_meal_time;
+    int eating_start_time;
+    int eating_finish_time;
+    pthread_mutex_t meal_mutex;
     t_arguments *arguments;
 }t_philo;
 
