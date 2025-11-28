@@ -6,103 +6,75 @@
 /*   By: msafa <msafa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/24 16:28:31 by msafa             #+#    #+#             */
-/*   Updated: 2025/11/27 21:24:09 by msafa            ###   ########.fr       */
+/*   Updated: 2025/11/28 21:24:47 by msafa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philo.h"
 
-static void print_status(t_philo *philo, char *msg, int timestamp)
+int	check_simulation_status(t_philo *philo)
 {
-    pthread_mutex_lock(&philo->arguments->print_mutex);
-    pthread_mutex_lock(&philo->arguments->death_mutex);
-    if (philo->arguments->simulation_running)
-        printf("%d %d %s\n", timestamp, philo->philosopher_id, msg);
-    pthread_mutex_unlock(&philo->arguments->death_mutex);
-    pthread_mutex_unlock(&philo->arguments->print_mutex);
+	int	running;
+
+	pthread_mutex_lock(&philo->arguments->death_mutex);
+	running = philo->arguments->simulation_running;
+	pthread_mutex_unlock(&philo->arguments->death_mutex);
+	return (running);
 }
 
-void *dining(void *arg)
+static void	odd_philosopher_routine(t_philo *philo)
 {
-    t_philo *philosophers;
-    struct timeval t;
-    int timestamp;
-    int running;
+	int	timestamp;
 
-    philosophers = (t_philo *)arg;
-    timestamp = 0;
-    if(philosophers->philosopher_id % 2 == 1)
-    {
-        while(1)
-        {
-            pthread_mutex_lock(&philosophers->arguments->death_mutex);
-            running = philosophers->arguments->simulation_running;
-            pthread_mutex_unlock(&philosophers->arguments->death_mutex);
-            if(!running)
-                break;
-            pthread_mutex_lock(philosophers->left_fork);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "has taken a fork", timestamp);
-            pthread_mutex_lock(philosophers->right_fork);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "has taken a fork", timestamp);
-            pthread_mutex_lock(&philosophers->meal_mutex);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            philosophers->last_meal_time = timestamp;
-            philosophers->meals_eaten++;
-            pthread_mutex_unlock(&philosophers->meal_mutex);
-            print_status(philosophers, "is eating", timestamp);
-            usleep(philosophers->arguments->time_to_eat * 1000 * 0.9);
-            pthread_mutex_unlock(philosophers->left_fork);
-            pthread_mutex_unlock(philosophers->right_fork);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "is sleeping", timestamp);
-            usleep(philosophers->arguments->time_to_sleep * 1000);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "is thinking", timestamp);
-        }
-    }
-    else
-    {
-        usleep(1000);
-        while(1)
-        {
-            pthread_mutex_lock(&philosophers->arguments->death_mutex);
-            running = philosophers->arguments->simulation_running;
-            pthread_mutex_unlock(&philosophers->arguments->death_mutex);
-            if(!running)
-                break;
-            pthread_mutex_lock(philosophers->right_fork);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "has taken a fork", timestamp);
-            pthread_mutex_lock(philosophers->left_fork);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "has taken a fork", timestamp);
-            pthread_mutex_lock(&philosophers->meal_mutex);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            philosophers->last_meal_time = timestamp;
-            philosophers->meals_eaten++;
-            pthread_mutex_unlock(&philosophers->meal_mutex);
-            print_status(philosophers, "is eating", timestamp);
-            usleep(philosophers->arguments->time_to_eat * 1000 * 0.9);
-            pthread_mutex_unlock(philosophers->left_fork);
-            pthread_mutex_unlock(philosophers->right_fork);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "is sleeping", timestamp);
-            usleep(philosophers->arguments->time_to_sleep * 1000);
-            gettimeofday(&t,NULL);
-            timestamp = ((t.tv_sec * 1000)+ (t.tv_usec / 1000)) - philosophers->arguments->start_time;
-            print_status(philosophers, "is thinking", timestamp);
-        }
-    }
-    return NULL ;
+	while (1)
+	{
+		if (!check_simulation_status(philo))
+			break ;
+		take_left_fork(philo);
+		take_right_fork(philo);
+		start_eating(philo);
+		usleep(philo->arguments->time_to_eat * 1000 * 0.9);
+		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(philo->right_fork);
+		timestamp = get_timestamp(philo);
+		print_status(philo, "is sleeping", timestamp);
+		usleep(philo->arguments->time_to_sleep * 1000);
+		timestamp = get_timestamp(philo);
+		print_status(philo, "is thinking", timestamp);
+	}
+}
+
+static void	even_philosopher_routine(t_philo *philo)
+{
+	int	timestamp;
+
+	usleep(1000);
+	while (1)
+	{
+		if (!check_simulation_status(philo))
+			break ;
+		take_right_fork(philo);
+		take_left_fork(philo);
+		start_eating(philo);
+		usleep(philo->arguments->time_to_eat * 1000 * 0.9);
+		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(philo->right_fork);
+		timestamp = get_timestamp(philo);
+		print_status(philo, "is sleeping", timestamp);
+		usleep(philo->arguments->time_to_sleep * 1000);
+		timestamp = get_timestamp(philo);
+		print_status(philo, "is thinking", timestamp);
+	}
+}
+
+void	*dining(void *arg)
+{
+	t_philo	*philo;
+
+	philo = (t_philo *)arg;
+	if (philo->philosopher_id % 2 == 1)
+		odd_philosopher_routine(philo);
+	else
+		even_philosopher_routine(philo);
+	return (NULL);
 }

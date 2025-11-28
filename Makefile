@@ -23,7 +23,9 @@ SRC_DIR = src
 SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/parsing.c \
        $(SRC_DIR)/dining.c \
-       $(SRC_DIR)/init_data.c
+       $(SRC_DIR)/dining_utils.c \
+       $(SRC_DIR)/init_data.c \
+       $(SRC_DIR)/monitor.c
 
 # Object files
 OBJ_DIR = obj
