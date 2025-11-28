@@ -29,7 +29,9 @@ typedef struct s_arguments
     int time_to_sleep;
     int number_of_times_each_philosopher_must_eat;
     int start_time;
+    int simulation_running;
     pthread_mutex_t print_mutex;
+    pthread_mutex_t death_mutex;
 } t_arguments;
 
 typedef struct s_philo

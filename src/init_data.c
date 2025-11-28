@@ -55,7 +55,6 @@ pthread_t *init_threads(t_arguments *arguments,t_philo **philosophers,pthread_mu
 			perror("Failed to create thread");
 			return(NULL);
 		}
-		pthread_detach(threads[i]);
 		i++;
 	}
 	return(threads);

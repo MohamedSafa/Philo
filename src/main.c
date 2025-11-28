@@ -32,6 +32,8 @@ int	main(int argc, char *argv[])
 	}
 	parse_arguments(argv, &arguments);
 	pthread_mutex_init(&arguments.print_mutex,NULL);
+	pthread_mutex_init(&arguments.death_mutex,NULL);
+	arguments.simulation_running = 1;
 	forks = init_mutex(&arguments);
 	if(forks == NULL)
 		return(1);
@@ -54,26 +56,40 @@ int	main(int argc, char *argv[])
 			if(arguments.number_of_times_each_philosopher_must_eat != -1
 				&& philosophers[i].meals_eaten >= arguments.number_of_times_each_philosopher_must_eat)
 				finished_count++;
-			pthread_mutex_unlock(&philosophers[i].meal_mutex);
 			if((current_time - death_tracker) > arguments.time_to_die)
 			{
+				pthread_mutex_unlock(&philosophers[i].meal_mutex);
+				pthread_mutex_lock(&arguments.death_mutex);
+				arguments.simulation_running = 0;
+				pthread_mutex_unlock(&arguments.death_mutex);
 				pthread_mutex_lock(&arguments.print_mutex);
 				printf("%d %d died\n", current_time, philosophers[i].philosopher_id);
-				free(threads);
-				free(forks);
-				free(philosophers);
-				return (0);
+				pthread_mutex_unlock(&arguments.print_mutex);
+				break;
 			}
+			pthread_mutex_unlock(&philosophers[i].meal_mutex);
 			i++;
 		}
+		if(!arguments.simulation_running)
+			break;
 		if(finished_count == arguments.number_of_philosphers)
 		{
-			pthread_mutex_lock(&arguments.print_mutex);
-			free(threads);
-			free(forks);
-			free(philosophers);
-			return (0);
+			pthread_mutex_lock(&arguments.death_mutex);
+			arguments.simulation_running = 0;
+			pthread_mutex_unlock(&arguments.death_mutex);
+			break;
 		}
 	}
+	i = 0;
+	while(i < arguments.number_of_philosphers)
+	{
+		pthread_join(threads[i], NULL);
+		i++;
+	}
+	pthread_mutex_destroy(&arguments.print_mutex);
+	pthread_mutex_destroy(&arguments.death_mutex);
+	free(threads);
+	free(forks);
+	free(philosophers);
 	return (0);
 }
