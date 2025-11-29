@@ -12,6 +12,21 @@
 
 #include "../includes/philo.h"
 
+static void	destroy_mutexes(t_arguments *arguments, t_philo *philosophers)
+{
+	int	i;
+
+	i = 0;
+	while (i < arguments->number_of_philosphers)
+	{
+		pthread_mutex_destroy(&philosophers[i].meal_mutex);
+		pthread_mutex_destroy(&arguments->forks[i]);
+		i++;
+	}
+	pthread_mutex_destroy(&arguments->print_mutex);
+	pthread_mutex_destroy(&arguments->death_mutex);
+}
+
 int	main(int argc, char *argv[])
 {
 	t_arguments	arguments;
@@ -33,8 +48,7 @@ int	main(int argc, char *argv[])
 		pthread_join(arguments.threads[i], NULL);
 		i++;
 	}
-	pthread_mutex_destroy(&arguments.print_mutex);
-	pthread_mutex_destroy(&arguments.death_mutex);
+	destroy_mutexes(&arguments, philosophers);
 	free(arguments.threads);
 	free(arguments.forks);
 	free(philosophers);

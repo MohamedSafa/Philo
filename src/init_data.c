@@ -72,7 +72,7 @@ pthread_t	*init_threads(t_arguments *arguments, t_philo **philosophers,
 		fill_philosopher(&(*philosophers)[i], i, arguments, forks);
 		if (pthread_create(&threads[i], NULL, dining, &(*philosophers)[i]) != 0)
 		{
-			perror("Failed to create thread");
+			write(2, "Failed to create thread\n", 24);
 			return (NULL);
 		}
 		i++;

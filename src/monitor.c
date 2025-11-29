@@ -52,24 +52,37 @@ static int	check_meals_finished(t_arguments *arguments, t_philo *philosophers)
 	return (finished_count);
 }
 
-void	start_dining(t_arguments *arguments, t_philo *philosophers)
+static int	monitor_all_philosophers(t_arguments *args, t_philo *philos)
 {
 	int	i;
 	int	current_time;
+
+	i = 0;
+	while (i < args->number_of_philosphers)
+	{
+		current_time = get_current_time() - args->start_time;
+		check_death(args, philos, i, current_time);
+		pthread_mutex_lock(&args->death_mutex);
+		if (!args->simulation_running)
+		{
+			pthread_mutex_unlock(&args->death_mutex);
+			return (1);
+		}
+		pthread_mutex_unlock(&args->death_mutex);
+		i++;
+	}
+	return (0);
+}
+
+void	start_dining(t_arguments *arguments, t_philo *philosophers)
+{
 	int	finished_count;
 
 	while (1)
 	{
 		usleep(1000);
-		i = 0;
-		while (i < arguments->number_of_philosphers)
-		{
-			current_time = get_current_time() - arguments->start_time;
-			check_death(arguments, philosophers, i, current_time);
-			if (!arguments->simulation_running)
-				return ;
-			i++;
-		}
+		if (monitor_all_philosophers(arguments, philosophers))
+			return ;
 		finished_count = check_meals_finished(arguments, philosophers);
 		if (finished_count == arguments->number_of_philosphers)
 		{

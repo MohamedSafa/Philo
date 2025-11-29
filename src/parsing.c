@@ -12,6 +12,21 @@
 
 #include "../includes/philo.h"
 
+static int	ft_atoi(char *str)
+{
+	int	result;
+	int	i;
+
+	result = 0;
+	i = 0;
+	while (str[i] >= '0' && str[i] <= '9')
+	{
+		result = result * 10 + (str[i] - '0');
+		i++;
+	}
+	return (result);
+}
+
 int	only_digits(char *s)
 {
 	int	i;
@@ -39,7 +54,7 @@ int	validate_input(int argc, char *argv[])
 			return (0);
 		if (!only_digits(argv[i]))
 			return (0);
-		if (atoi(argv[i]) <= 0)
+		if (ft_atoi(argv[i]) <= 0)
 			return (0);
 		i++;
 	}
@@ -48,13 +63,13 @@ int	validate_input(int argc, char *argv[])
 
 void	parse_arguments(char *argv[], t_arguments *arguments)
 {
-	arguments->number_of_philosphers = atoi(argv[1]);
-	arguments->number_of_forks = atoi(argv[1]);
-	arguments->time_to_die = atoi(argv[2]);
-	arguments->time_to_eat = atoi(argv[3]);
-	arguments->time_to_sleep = atoi(argv[4]);
+	arguments->number_of_philosphers = ft_atoi(argv[1]);
+	arguments->number_of_forks = ft_atoi(argv[1]);
+	arguments->time_to_die = ft_atoi(argv[2]);
+	arguments->time_to_eat = ft_atoi(argv[3]);
+	arguments->time_to_sleep = ft_atoi(argv[4]);
 	if (argv[5])
-		arguments->number_of_meals = atoi(argv[5]);
+		arguments->number_of_meals = ft_atoi(argv[5]);
 	else
 		arguments->number_of_meals = -1;
 }
